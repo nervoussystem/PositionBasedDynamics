@@ -1,4 +1,5 @@
 #include "CollisionDetection.h"
+
 #include "Demos/Simulation/IDFactory.h"
 
 using namespace PBD;

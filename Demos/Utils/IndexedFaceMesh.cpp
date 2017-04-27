@@ -44,6 +44,7 @@ IndexedFaceMesh::IndexedFaceMesh(IndexedFaceMesh const& other)
 
 IndexedFaceMesh::IndexedFaceMesh(const unsigned int verticesPerFace)
 {
+	m_numPoints = 0;
 	m_verticesPerFace = verticesPerFace;
 	m_closed=false;
 }

@@ -13,7 +13,7 @@ namespace PBD
 	 */
 	class RigidBody
 	{
-		private:
+		protected:
 			/** mass */
 			Real m_mass;
 			/** inverse mass */
@@ -72,8 +72,11 @@ namespace PBD
 			Vector3r m_transformation_R_X_v1;
 			
 		public:
+			Real m_radius;
+
 			RigidBody(void) 
 			{
+				m_radius = 0;
 			}
 
 			~RigidBody(void)
@@ -109,8 +112,10 @@ namespace PBD
 				m_restitutionCoeff = 0.6;
 				m_frictionCoeff = 0.2;
 
-				getGeometry().initMesh(vertices.size(), mesh.numFaces(), &vertices.getPosition(0), mesh.getFaces().data(), mesh.getUVIndices(), mesh.getUVs(), scale);
-				getGeometry().updateMeshTransformation(getPosition(), getRotationMatrix());
+				if (vertices.size() > 0) {
+					getGeometry().initMesh(vertices.size(), mesh.numFaces(), &vertices.getPosition(0), mesh.getFaces().data(), mesh.getUVIndices(), mesh.getUVs(), scale);
+					getGeometry().updateMeshTransformation(getPosition(), getRotationMatrix());
+				}
 			}
 
 			void initBody(const Real density, const Vector3r &x, const Quaternionr &rotation,
