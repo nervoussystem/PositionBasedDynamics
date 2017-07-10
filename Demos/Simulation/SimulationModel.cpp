@@ -136,6 +136,11 @@ SimulationModel::ConstraintVector & SimulationModel::getConstraints()
 	return m_constraints;
 }
 
+SimulationModel::ConstraintVector & SimulationModel::getTempConstraints()
+{
+	return m_temp_constraints;
+}
+
 SimulationModel::RigidBodyContactConstraintVector & SimulationModel::getRigidBodyContactConstraints()
 {
 	return m_rigidBodyContactConstraints;
@@ -311,6 +316,16 @@ bool SimulationModel::addDistanceConstraint(const unsigned int particle1, const 
 	{
 		m_constraints.push_back(c);
 		m_groupsInitialized = false;
+	}
+	return res;
+}
+
+bool SimulationModel::addEdgeEdgeConstraint(const unsigned int particle1, const unsigned int particle2, const unsigned int particle3, const unsigned int particle4, Real distance) {
+	EdgeEdgeDistanceConstraint *c = new EdgeEdgeDistanceConstraint();
+	const bool res = c->initConstraint(*this, particle1, particle2, particle3, particle4, distance);
+	if (res)
+	{
+		m_temp_constraints.push_back(c);
 	}
 	return res;
 }
@@ -572,6 +587,12 @@ void SimulationModel::initConstraintGroups()
 	m_groupsInitialized = true;
 }
 
+void SimulationModel::resetTemp()
+{
+	for (int i = 0; i < m_temp_constraints.size(); ++i) delete m_temp_constraints[i];
+	m_temp_constraints.clear();
+
+}
 void SimulationModel::resetContacts()
 {
 	m_rigidBodyContactConstraints.reset();

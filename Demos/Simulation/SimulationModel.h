@@ -39,6 +39,7 @@ namespace PBD
 			ParticleData m_particles;
 			OrientationData m_orientations;
 			ConstraintVector m_constraints;
+			ConstraintVector m_temp_constraints; 
 			RigidBodyContactConstraintVector m_rigidBodyContactConstraints;
 			ParticleRigidBodyContactConstraintVector m_particleRigidBodyContactConstraints;
 			ConstraintGroupVector m_constraintGroups;
@@ -79,12 +80,14 @@ namespace PBD
 			TetModelVector &getTetModels();
 			LineModelVector &getLineModels();
 			ConstraintVector &getConstraints();
+			ConstraintVector &getTempConstraints();
 			RigidBodyContactConstraintVector &getRigidBodyContactConstraints();
 			ParticleRigidBodyContactConstraintVector &getParticleRigidBodyContactConstraints();
 			ConstraintGroupVector &getConstraintGroups();
 			bool m_groupsInitialized;
 
 			void resetContacts();
+			void resetTemp();
 
 			void addTriangleModel(
 				const unsigned int nPoints,
@@ -131,6 +134,7 @@ namespace PBD
 					const Real restitutionCoeff, const Real frictionCoeff);
 
 			bool addDistanceConstraint(const unsigned int particle1, const unsigned int particle2);
+			bool addEdgeEdgeConstraint(const unsigned int particle1, const unsigned int particle2, const unsigned int particle3, const unsigned int particle4, Real distance);
 			bool addDihedralConstraint(	const unsigned int particle1, const unsigned int particle2,
 										const unsigned int particle3, const unsigned int particle4);
 			bool addIsometricBendingConstraint(const unsigned int particle1, const unsigned int particle2,

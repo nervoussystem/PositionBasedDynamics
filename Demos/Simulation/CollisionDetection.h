@@ -50,13 +50,13 @@ namespace PBD
 		void *m_contactCBUserData;
 		ObjectArray<CollisionObject*> m_collisionObjects;
 
-		void updateAABB(const Vector3r &p, AABB &aabb);
 
 	public:
 		CollisionDetection();
 		virtual ~CollisionDetection();
 
 		void cleanup();
+		void updateAABB(const Vector3r &p, AABB &aabb);
 
 		Real getTolerance() const { return m_tolerance; }
 		void setTolerance(Real val) { m_tolerance = val; }

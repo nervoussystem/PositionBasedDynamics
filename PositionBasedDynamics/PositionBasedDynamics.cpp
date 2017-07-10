@@ -24,7 +24,8 @@ bool PositionBasedDynamics::solve_DistanceConstraint(
 
 	Vector3r n = p1 - p0;
 	Real d = n.norm();
-	n.normalize();
+	if (d < 1e-9) return false;
+	n /= d;
 	
 	Vector3r corr;
 	if (d < restLength)
@@ -449,10 +450,38 @@ bool PositionBasedDynamics::solve_EdgeEdgeDistanceConstraint(
 			t = (t0 == t1) ? 0.5 : (mid - t0) / (t1 - t0);
 		}
 	}
-	if (s < 0.0) s = 0.0;
-	if (s > 1.0) s = 1.0;
-	if (t < 0.0) t = 0.0;
-	if (t > 1.0) t = 1.0;
+	if(s < 0.0) {
+		s = 0.0;
+		t = f / d;
+	}
+	else if (s > 1.0) {
+		s = 1.0;
+		t = (f + b) / d;
+	}
+	if (t < 0.0) {
+		t = 0.0;
+		if (e<0) {
+			s = 0.0;
+		}
+		else if (e>a) {
+			s = 1.0;
+		}
+		else {
+			s = e / a;
+		}
+	}
+	else if (t > 1.0) {
+		t = 1.0;
+		if (e - b < 0.0) {
+			s = 0.0;
+		}
+		else if ((e - b) > a) {
+			s = 1.0;
+		}
+		else {
+			s = (e - b) / a;
+		}
+	}
 
 	Real b0 = 1.0 - s;
 	Real b1 = s;

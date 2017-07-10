@@ -15,6 +15,7 @@ int HingeJoint::TYPE_ID = IDFactory::getId();
 int UniversalJoint::TYPE_ID = IDFactory::getId();
 int RigidBodyParticleBallJoint::TYPE_ID = IDFactory::getId();
 int DistanceConstraint::TYPE_ID = IDFactory::getId();
+int EdgeEdgeDistanceConstraint::TYPE_ID = IDFactory::getId();
 int DihedralConstraint::TYPE_ID = IDFactory::getId();
 int IsometricBendingConstraint::TYPE_ID = IDFactory::getId();
 int FEMTriangleConstraint::TYPE_ID = IDFactory::getId();
@@ -922,6 +923,59 @@ bool DistanceConstraint::solvePositionConstraint(SimulationModel &model)
 			x1 += corr1;
 		if (invMass2 != 0.0)
 			x2 += corr2;
+	}
+	return res;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// EdgeEdgeDistanceConstraint
+//////////////////////////////////////////////////////////////////////////
+bool EdgeEdgeDistanceConstraint::initConstraint(SimulationModel &model, const unsigned int particle1, const unsigned int particle2, const unsigned int particle3, const unsigned int particle4, Real distance)
+{
+	m_bodies[0] = particle1;
+	m_bodies[1] = particle2;
+	m_bodies[2] = particle3;
+	m_bodies[3] = particle4;
+
+	m_restLength = distance;
+
+	return true;
+}
+
+bool EdgeEdgeDistanceConstraint::solvePositionConstraint(SimulationModel &model)
+{
+	ParticleData &pd = model.getParticles();
+
+	const unsigned i1 = m_bodies[0];
+	const unsigned i2 = m_bodies[1];
+	const unsigned i3 = m_bodies[2];
+	const unsigned i4 = m_bodies[3];
+
+	Vector3r &x1 = pd.getPosition(i1);
+	Vector3r &x2 = pd.getPosition(i2);
+	Vector3r &x3 = pd.getPosition(i3);
+	Vector3r &x4 = pd.getPosition(i4);
+	const Real invMass1 = pd.getInvMass(i1);
+	const Real invMass2 = pd.getInvMass(i2);
+	const Real invMass3 = pd.getInvMass(i3);
+	const Real invMass4 = pd.getInvMass(i4);
+
+	Vector3r corr1, corr2, corr3, corr4;
+	const bool res = PositionBasedDynamics::solve_EdgeEdgeDistanceConstraint(
+		x1, invMass1, x2, invMass2, x3, invMass3, x4, invMass4,
+		m_restLength, model.getClothStiffness(),0.0, corr1, corr2, corr3, corr4);
+
+	if (res)
+	{
+		if (invMass1 != 0.0)
+			x1 += corr1;
+		if (invMass2 != 0.0)
+			x2 += corr2;
+		if (invMass3 != 0.0)
+			x3 += corr3;
+		if (invMass4 != 0.0)
+			x4 += corr4;
 	}
 	return res;
 }

@@ -207,6 +207,19 @@ namespace PBD
 		virtual bool solvePositionConstraint(SimulationModel &model);
 	};
 
+	class EdgeEdgeDistanceConstraint : public Constraint
+	{
+	public:
+		static int TYPE_ID;
+		Real m_restLength;
+
+		EdgeEdgeDistanceConstraint() : Constraint(4) {}
+		virtual int &getTypeId() const { return TYPE_ID; }
+
+		virtual bool initConstraint(SimulationModel &model, const unsigned int particle1, const unsigned int particle2, const unsigned int particle3, const unsigned int particle4, Real distance);
+		virtual bool solvePositionConstraint(SimulationModel &model);
+	};
+
 	class DihedralConstraint : public Constraint
 	{
 	public:

@@ -76,6 +76,7 @@ void TimeStepController::step(SimulationModel &model)
 
 	START_TIMING("position constraints projection");
 	positionConstraintProjection(model);
+
 	STOP_TIMING_AVG;
  
 	#pragma omp parallel if(numBodies > MIN_PARALLEL_SIZE) default(shared)
@@ -126,7 +127,9 @@ void TimeStepController::step(SimulationModel &model)
 		STOP_TIMING_AVG;
 	}
 
+	START_TIMING("velocity constraints projection");
 	velocityConstraintProjection(model);
+	STOP_TIMING_AVG;
 	
 	// compute new time	
 	tm->setTime (tm->getTime () + h);
@@ -140,12 +143,24 @@ void TimeStepController::clearAccelerations(SimulationModel &model)
 	//////////////////////////////////////////////////////////////////////////
 
 	SimulationModel::RigidBodyVector &rb = model.getRigidBodies();
-	for (size_t i=0; i < rb.size(); i++)
+	/*
+	expansion
+	Vector3r com(0, 0, 0);
+	Real totalMass;
+	for (size_t i = 0; i < rb.size(); i++) {
+		Real mass = rb[i]->getMass();
+		totalMass += mass;
+		com += rb[i]->getPosition()*mass;
+	}
+	com /= totalMass;
+	*/
+	for (size_t i = 0; i < rb.size(); i++)
 	{
 		// Clear accelerations of dynamic particles
 		if (rb[i]->getMass() != 0.0)
 		{
 			Vector3r &a = rb[i]->getAcceleration();
+			//a = (rb[i]->getPosition() - com).normalized() * 3;
 			a = m_gravity;
 		}
 	}
@@ -181,6 +196,7 @@ void TimeStepController::positionConstraintProjection(SimulationModel &model)
 
 	SimulationModel::RigidBodyVector &rb = model.getRigidBodies();
 	SimulationModel::ConstraintVector &constraints = model.getConstraints();
+	SimulationModel::ConstraintVector &tempConstraints = model.getTempConstraints();
 	SimulationModel::ConstraintGroupVector &groups = model.getConstraintGroups();
 	SimulationModel::RigidBodyContactConstraintVector &contacts = model.getRigidBodyContactConstraints();
 
@@ -201,7 +217,17 @@ void TimeStepController::positionConstraintProjection(SimulationModel &model)
 				}
 			}
 		}
- 
+
+		const int numTemp = tempConstraints.size();
+		#pragma omp parallel if(numTemp > MIN_PARALLEL_SIZE) default(shared)
+		{
+			#pragma omp for schedule(static) 
+			for (int i = 0; i < numTemp; i++)
+			{
+				tempConstraints[i]->updateConstraint(model);
+				tempConstraints[i]->solvePositionConstraint(model);
+			}
+		}
 		iter++;
 	}
 }
@@ -251,8 +277,13 @@ void TimeStepController::velocityConstraintProjection(SimulationModel &model)
 		}
 
 		// solve contacts
-		for (unsigned int i = 0; i < rigidBodyContacts.size(); i++)
-			rigidBodyContacts[i].solveVelocityConstraint(model);
+		int contactSize = rigidBodyContacts.size();
+		#pragma omp parallel if(contactSize > MIN_PARALLEL_SIZE) default(shared)
+		{
+			#pragma omp for schedule(static)
+			for (int i = 0; i < contactSize; i++)
+				rigidBodyContacts[i].solveVelocityConstraint(model);
+		}
 		for (unsigned int i = 0; i < particleRigidBodyContacts.size(); i++)
 			particleRigidBodyContacts[i].solveVelocityConstraint(model);
 
