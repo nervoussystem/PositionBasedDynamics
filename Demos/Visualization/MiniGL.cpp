@@ -23,6 +23,7 @@
 
 #include "math.h"
 #include <iostream>
+#include "Demos/Utils/Logger.h"
 
 using namespace PBD;
 
@@ -62,9 +63,9 @@ GLint MiniGL::m_context_minor_version = 0;
 GLint MiniGL::m_context_profile = 0;
 bool MiniGL::m_breakPointActive = true;
 bool MiniGL::m_breakPointLoop = false;
-ObjectArray<MiniGL::Triangle> MiniGL::m_drawTriangle;
-ObjectArray<MiniGL::Line> MiniGL::m_drawLines;
-ObjectArray<MiniGL::Point> MiniGL::m_drawPoints;
+std::vector<MiniGL::Triangle> MiniGL::m_drawTriangle;
+std::vector<MiniGL::Line> MiniGL::m_drawLines;
+std::vector<MiniGL::Point> MiniGL::m_drawPoints;
 
 
 
@@ -87,6 +88,25 @@ void MiniGL::unbindTexture()
 void MiniGL::getOpenGLVersion(int &major_version, int &minor_version)
 {
 	sscanf((const char*)glGetString(GL_VERSION), "%d.%d", &major_version, &minor_version);
+}
+
+void MiniGL::hsvToRgb(float h, float s, float v, float *rgb)
+{
+	int i = (int)floor(h * 6);
+	float f = h * 6 - i;
+	float p = v * (1 - s);
+	float q = v * (1 - f * s);
+	float t = v * (1 - (1 - f) * s);
+
+	switch (i % 6)
+	{
+	case 0: rgb[0] = v, rgb[1] = t, rgb[2] = p; break;
+	case 1: rgb[0] = q, rgb[1] = v, rgb[2] = p; break;
+	case 2: rgb[0] = p, rgb[1] = v, rgb[2] = t; break;
+	case 3: rgb[0] = p, rgb[1] = q, rgb[2] = v; break;
+	case 4: rgb[0] = t, rgb[1] = p, rgb[2] = v; break;
+	case 5: rgb[0] = v, rgb[1] = p, rgb[2] = q; break;
+	}
 }
 
 
@@ -443,18 +463,18 @@ void MiniGL::init(int argc, char **argv, const int width, const int height, cons
 
 	if (GLEW_OK != err)
 	{
-		std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
+		LOG_ERR << "Error: " << glewGetErrorString(err);
 		exit(EXIT_FAILURE);
 	}
 	
 	getOpenGLVersion(m_context_major_version, m_context_minor_version);
 	glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &m_context_profile);
 
-	std::cout << "OpenGL version " << m_context_major_version << "." << m_context_minor_version << std::endl;
-	std::cout << "Using GLEW " << glewGetString(GLEW_VERSION) << std::endl;
-	std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
-	std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
-	std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
+	LOG_INFO << "OpenGL version " << m_context_major_version << "." << m_context_minor_version;
+	LOG_INFO << "Using GLEW " << glewGetString(GLEW_VERSION);
+	LOG_INFO << "Vendor: " << glGetString(GL_VENDOR);
+	LOG_INFO << "Renderer: " << glGetString(GL_RENDERER);
+	LOG_INFO << "Version: " << glGetString(GL_VERSION);
 
 
 	// Initialize AntTweakBar
@@ -997,31 +1017,34 @@ void MiniGL::clearElements()
 
 void MiniGL::addPoint(const Vector3r &a, const float pointSize, const float *color)
 {
-	Point &p = m_drawPoints.create();
+	Point p;
 	p.a = a;
 	p.pointSize = pointSize;
 	for (unsigned char i = 0; i < 4; i++)
 		p.color[i] = color[i];
+	m_drawPoints.push_back(p);
 }
 
 void MiniGL::addLine(const Vector3r &a, const Vector3r &b, const float lineWidth, const float *color)
 {
-	Line &l = m_drawLines.create();
+	Line l;
 	l.a = a;
 	l.b = b;
 	l.lineWidth = lineWidth;
 	for (unsigned char i = 0; i < 4; i++)
 		l.color[i] = color[i];
+	m_drawLines.push_back(l);
 }
 
 void MiniGL::addTriangle(const Vector3r &a, const Vector3r &b, const Vector3r &c, const float *color)
 {
-	Triangle &t = m_drawTriangle.create();
+	Triangle t;
 	t.a = a;
 	t.b = b;
 	t.c = c;
 	for (unsigned char i = 0; i < 4; i++)
 		t.color[i] = color[i];
+	m_drawTriangle.push_back(t);
 }
 
 void MiniGL::setBreakPointActive(const bool active)

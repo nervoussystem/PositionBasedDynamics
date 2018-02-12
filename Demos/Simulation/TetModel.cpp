@@ -1,8 +1,10 @@
 #include "TetModel.h"
 #include "PositionBasedDynamics/PositionBasedDynamics.h"
 #include <iostream>
+#include "Demos/Utils/Logger.h"
 
 using namespace PBD;
+using namespace Utilities;
 
 TetModel::TetModel() :
 	m_surfaceMesh(),
@@ -155,7 +157,7 @@ void TetModel::attachVisMesh(const ParticleData &pd)
 			}
 			if (curT[0] == -1)
 			{
-				std::cout << "ERROR: vertex has no nearest triangle." << std::endl;
+				LOG_ERR << "ERROR: vertex has no nearest triangle.";
 				continue;
 			}
 

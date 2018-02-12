@@ -3,6 +3,7 @@
 #include "Demos/Simulation/IDFactory.h"
 
 using namespace PBD;
+using namespace Utilities;
 
 int CollisionDetection::CollisionObjectWithoutGeometry::TYPE_ID = IDFactory::getId();
 

@@ -5,7 +5,7 @@
 #include <Eigen/Geometry> 
 #include "Demos/Visualization/Shader.h"
 #include "extern/AntTweakBar/include/AntTweakBar.h"
-#include "Demos/Utils/ObjectArray.h"
+#include <vector>
 
 #ifdef USE_DOUBLE
 #define glNormal3v glNormal3dv
@@ -98,9 +98,9 @@ namespace PBD
 		static GLint m_context_profile;
 		static bool m_breakPointActive;
 		static bool m_breakPointLoop;
-		static ObjectArray<Point> m_drawPoints;
-		static ObjectArray<Line> m_drawLines;
-		static ObjectArray<Triangle> m_drawTriangle;
+		static std::vector<Point> m_drawPoints;
+		static std::vector<Line> m_drawLines;
+		static std::vector<Triangle> m_drawTriangle;
 
 		static void reshape (int w, int h);
 		static void idle ();
@@ -116,6 +116,7 @@ namespace PBD
 	public:
 		static void getOpenGLVersion(int &major_version, int &minor_version);
 		static void coordinateSystem ();
+		static void hsvToRgb(float h, float s, float v, float *rgb);
 		static void drawVector(const Vector3r &a, const Vector3r &b, const float w, float *color);
 		static void drawCylinder(const Vector3r &a, const Vector3r &b, const float *color, const float radius = 0.02, const unsigned int subdivisions = 8);
 		static void drawSphere(const Vector3r &translation, float radius, float *color, const unsigned int subDivision = 16);

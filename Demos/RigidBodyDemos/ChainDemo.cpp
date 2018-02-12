@@ -9,8 +9,9 @@
 #include <iostream>
 #include "Demos/Utils/OBJLoader.h"
 #include "Demos/Visualization/Visualization.h"
-#include "Demos/Utils/Utilities.h"
+#include "Demos/Utils/Logger.h"
 #include "Demos/Utils/Timing.h"
+#include "Demos/Utils/FileSystem.h"
 
 #define _USE_MATH_DEFINES
 #include "math.h"
@@ -21,9 +22,13 @@
 	#define new DEBUG_NEW 
 #endif
 
+INIT_TIMING
+INIT_LOGGING
+
 using namespace PBD;
 using namespace Eigen;
 using namespace std;
+using namespace Utilities;
 
 void timeStep ();
 void buildModel ();
@@ -58,7 +63,12 @@ int main( int argc, char **argv )
 {
 	REPORT_MEMORY_LEAKS
 
-	exePath = Utilities::getFilePath(argv[0]);
+	std::string logPath = FileSystem::normalizePath(FileSystem::getProgramPath() + "/log");
+	FileSystem::makeDirs(logPath);
+	logger.addSink(unique_ptr<ConsoleSink>(new ConsoleSink(LogLevel::INFO)));
+	logger.addSink(unique_ptr<FileSink>(new FileSink(LogLevel::DEBUG, logPath + "/PBD.log")));
+
+	exePath = FileSystem::getProgramPath();
 	dataPath = exePath + "/" + std::string(PBD_DATA_PATH);
 
 	// OpenGL
@@ -250,6 +260,56 @@ void render ()
 }
 
 
+void loadObj(const std::string &filename, VertexData &vd, IndexedFaceMesh &mesh, const Vector3r &scale)
+{
+	std::vector<OBJLoader::Vec3f> x;
+	std::vector<OBJLoader::Vec3f> normals;
+	std::vector<OBJLoader::Vec2f> texCoords;
+	std::vector<MeshFaceIndices> faces;
+	OBJLoader::Vec3f s = { (float)scale[0], (float)scale[1], (float)scale[2] };
+	OBJLoader::loadObj(filename, &x, &faces, &normals, &texCoords, s);
+
+	mesh.release();
+	const unsigned int nPoints = (unsigned int)x.size();
+	const unsigned int nFaces = (unsigned int)faces.size();
+	const unsigned int nTexCoords = (unsigned int)texCoords.size();
+	mesh.initMesh(nPoints, nFaces * 2, nFaces);
+	vd.reserve(nPoints);
+	for (unsigned int i = 0; i < nPoints; i++)
+	{
+		vd.addVertex(Vector3r(x[i][0], x[i][1], x[i][2]));
+	}
+	for (unsigned int i = 0; i < nTexCoords; i++)
+	{
+		mesh.addUV(texCoords[i][0], texCoords[i][1]);
+	}
+	for (unsigned int i = 0; i < nFaces; i++)
+	{
+		// Reduce the indices by one
+		int posIndices[3];
+		int texIndices[3];
+		for (int j = 0; j < 3; j++)
+		{
+			posIndices[j] = faces[i].posIndices[j] - 1;
+			if (nTexCoords > 0)
+			{
+				texIndices[j] = faces[i].texIndices[j] - 1;
+				mesh.addUVIndex(texIndices[j]);
+			}
+		}
+
+		mesh.addFace(&posIndices[0]);
+	}
+	mesh.buildNeighbors();
+
+	mesh.updateNormals(vd, 0);
+	mesh.updateVertexNormals(vd);
+
+	LOG_INFO << "Number of triangles: " << nFaces;
+	LOG_INFO << "Number of vertices: " << nPoints;
+}
+
+
 /** Create the rigid body model
 */
 void createBodyModel()
@@ -257,15 +317,15 @@ void createBodyModel()
 	SimulationModel::RigidBodyVector &rb = model.getRigidBodies();
 	SimulationModel::ConstraintVector &constraints = model.getConstraints();
 
-	string fileName = Utilities::normalizePath(dataPath + "/models/cube.obj");
+	string fileName = FileSystem::normalizePath(dataPath + "/models/cube.obj");
 	IndexedFaceMesh mesh;
 	VertexData vd;
-	OBJLoader::loadObj(fileName, vd, mesh, Vector3r(width, height, depth));
+	loadObj(fileName, vd, mesh, Vector3r(width, height, depth));
 
-	string fileName2 = Utilities::normalizePath(dataPath + "/models/bunny_10k.obj");
+	string fileName2 = FileSystem::normalizePath(dataPath + "/models/bunny_10k.obj");
 	IndexedFaceMesh mesh2;
 	VertexData vd2;
-	OBJLoader::loadObj(fileName2, vd2, mesh2, Vector3r(2.0, 2.0, 2.0));
+	loadObj(fileName2, vd2, mesh2, Vector3r(2.0, 2.0, 2.0));
 
 	rb.resize(numberOfBodies);	
 	const Real density = 1.0;
