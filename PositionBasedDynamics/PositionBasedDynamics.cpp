@@ -38,6 +38,11 @@ bool PositionBasedDynamics::solve_DistanceConstraint(
 }
 
 
+
+Real sgn(Real v) {
+	return (0<v) - (v<0);
+}
+
 bool PositionBasedDynamics::solve_DihedralConstraint(
 	const Vector3r &p0, Real invMass0,		
 	const Vector3r &p1, Real invMass1,
@@ -70,6 +75,8 @@ bool PositionBasedDynamics::solve_DihedralConstraint(
 
 	n1.normalize();
 	n2.normalize();
+
+	
 	Real dot = n1.dot(n2);
 
 	if (dot < -1.0) dot = -1.0;
@@ -91,8 +98,8 @@ bool PositionBasedDynamics::solve_DihedralConstraint(
 	// 1.5 is the largest magic number I found to be stable in all cases :-)
 	//if (stiffness > 0.5 && fabs(phi - b.restAngle) > 1.5)		
 	//	stiffness = 0.5;
-
-	lambda = (phi - restAngle) / lambda * stiffness;
+	lambda = (phi-restAngle) / lambda * stiffness;
+	//lambda = (tanA) / lambda * stiffness;
 
 	if (n1.cross(n2).dot(e) > 0.0)
 		lambda = -lambda;	
@@ -603,8 +610,15 @@ bool PositionBasedDynamics::init_StrainTriangleConstraint(
 	const Vector3r &p2,
 	Matrix2r &invRestMat)
 {
-	Real a = p1[0] - p0[0]; Real b = p2[0] - p0[0];
-	Real c = p1[1] - p0[1]; Real d = p2[1] - p0[1];
+
+	Vector3r v1 = p1 - p0;
+	Vector3r v2 = p2 - p0;
+
+	Real len1 = v1.norm();
+	v1 /= len1;
+
+	Real a = len1; Real b = v2.dot(v1);
+	Real c =0; Real d = sqrt(v2.squaredNorm()-b*b);
 
 	// inverse
 	Real det = a*d - b*c;

@@ -962,7 +962,7 @@ bool DihedralConstraint::initConstraint(SimulationModel &model, const unsigned i
 	if (dot < -1.0) dot = -1.0;
 	if (dot > 1.0) dot = 1.0;
 
-	m_restAngle = acos(dot);
+	m_restAngle = 0;// acos(dot);
 
 	return true;
 }
@@ -1078,6 +1078,7 @@ bool FEMTriangleConstraint::initConstraint(SimulationModel &model, const unsigne
 	m_bodies[0] = particle1;
 	m_bodies[1] = particle2;
 	m_bodies[2] = particle3;
+	m_growth = 1.0;
 	
 	ParticleData &pd = model.getParticles();
 
@@ -1109,8 +1110,8 @@ bool FEMTriangleConstraint::solvePositionConstraint(SimulationModel &model)
 		x1, invMass1,
 		x2, invMass2,
 		x3, invMass3,
-		m_area,
-		m_invRestMat,
+		m_area*m_growth*m_growth,
+		m_invRestMat /m_growth,
 		model.getClothXXStiffness(),
 		model.getClothYYStiffness(),
 		model.getClothXYStiffness(),
@@ -1140,7 +1141,7 @@ bool StrainTriangleConstraint::initConstraint(SimulationModel &model, const unsi
 	m_bodies[0] = particle1;
 	m_bodies[1] = particle2;
 	m_bodies[2] = particle3;
-
+	growth = 1.0;
 	ParticleData &pd = model.getParticles();
 
 	Vector3r &x1 = pd.getPosition0(particle1);

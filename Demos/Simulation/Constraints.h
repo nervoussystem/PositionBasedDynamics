@@ -248,7 +248,7 @@ namespace PBD
 	{
 	public:
 		static int TYPE_ID;
-		Real m_area;
+		Real m_area,m_growth;
 		Matrix2r m_invRestMat;
 
 		FEMTriangleConstraint() : Constraint(3) {}
@@ -264,7 +264,7 @@ namespace PBD
 	public:
 		static int TYPE_ID;
 		Matrix2r m_invRestMat;
-
+		Real growth;
 		StrainTriangleConstraint() : Constraint(3) {}
 		virtual int &getTypeId() const { return TYPE_ID; }
 
