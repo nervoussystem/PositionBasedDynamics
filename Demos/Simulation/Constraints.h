@@ -229,6 +229,15 @@ namespace PBD
 									const unsigned int particle3, const unsigned int particle4);
 		virtual bool solvePositionConstraint(SimulationModel &model);
 	};
+
+	class FloorConstraint : public Constraint {
+	public:
+		static int TYPE_ID;
+		FloorConstraint() : Constraint(0) {}
+		virtual int &getTypeId() const { return TYPE_ID; }
+
+		virtual bool solvePositionConstraint(SimulationModel &model);
+	};
 	
 	class IsometricBendingConstraint : public Constraint
 	{
@@ -248,7 +257,7 @@ namespace PBD
 	{
 	public:
 		static int TYPE_ID;
-		Real m_area,m_growth;
+		Real m_area,m_growth = 1.0;
 		Matrix2r m_invRestMat;
 
 		FEMTriangleConstraint() : Constraint(3) {}

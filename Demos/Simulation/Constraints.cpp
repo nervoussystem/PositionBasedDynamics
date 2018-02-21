@@ -32,6 +32,7 @@ int RigidBodyContactConstraint::TYPE_ID = IDFactory::getId();
 int ParticleRigidBodyContactConstraint::TYPE_ID = IDFactory::getId();
 int StretchShearConstraint::TYPE_ID = IDFactory::getId();
 int BendTwistConstraint::TYPE_ID = IDFactory::getId();
+int FloorConstraint::TYPE_ID = IDFactory::getId();
 
 //////////////////////////////////////////////////////////////////////////
 // BallJoint
@@ -1078,7 +1079,7 @@ bool FEMTriangleConstraint::initConstraint(SimulationModel &model, const unsigne
 	m_bodies[0] = particle1;
 	m_bodies[1] = particle2;
 	m_bodies[2] = particle3;
-	m_growth = 1.0;
+	//m_growth = 1.0;
 	
 	ParticleData &pd = model.getParticles();
 
@@ -1728,4 +1729,16 @@ bool BendTwistConstraint::solvePositionConstraint(SimulationModel &model)
 		}
 	}
 	return res;
+}
+
+
+bool FloorConstraint::solvePositionConstraint(SimulationModel &model)
+{
+	ParticleData & pd = model.getParticles();
+	int num = pd.size();
+	for (int i = 0; i < num; ++i) {
+		Vector3r & pos = pd.getPosition(i);
+		pos.z() = std::max(pos.z(), 0.0+rand()*.0001/RAND_MAX);
+	}
+	return true;
 }
