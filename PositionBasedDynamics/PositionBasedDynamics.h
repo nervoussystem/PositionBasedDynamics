@@ -26,7 +26,7 @@ namespace PBD
 		* @param corr0 position correction of first particle
 		* @param corr1 position correction of second particle
 		*/
-		static bool solve_DistanceConstraint(
+		static Real solve_DistanceConstraint(
 			const Vector3r &p0, Real invMass0,
 			const Vector3r &p1, Real invMass1,
 			const Real restLength,
@@ -70,7 +70,7 @@ namespace PBD
 		 * @param corr2 position correction of third particle
 		 * @param corr3 position correction of fourth particle
 		 */
-		static bool solve_DihedralConstraint(
+		static Real solve_DihedralConstraint(
 			const Vector3r &p0, Real invMass0,		// angle on (p2, p3) between triangles (p0, p2, p3) and (p1, p3, p2)
 			const Vector3r &p1, Real invMass1,
 			const Vector3r &p2, Real invMass2,

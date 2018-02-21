@@ -224,6 +224,9 @@ void TimeStepController::positionConstraintProjection(SimulationModel &model)
 	SimulationModel::ConstraintGroupVector &groups = model.getConstraintGroups();
 	SimulationModel::RigidBodyContactConstraintVector &contacts = model.getRigidBodyContactConstraints();
 
+	for (Constraint * c : constraints) {
+		c->multiplier = 0;
+	}
 	while (iter < m_maxIter)
 	{
 		for (unsigned int group = 0; group < groups.size(); group++)

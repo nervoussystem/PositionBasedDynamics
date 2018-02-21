@@ -208,7 +208,7 @@ namespace PBD
 	{
 	public:
 		static int TYPE_ID;
-		Real m_restLength;
+		Real m_restLength, m_compliance=1e-6;
 
 		DistanceConstraint() : Constraint(2) {}
 		virtual int &getTypeId() const { return TYPE_ID; }
@@ -221,7 +221,7 @@ namespace PBD
 	{
 	public:
 		static int TYPE_ID;
-		Real m_restAngle;
+		Real m_restAngle,m_compliance = .5;
 
 		DihedralConstraint() : Constraint(4) {}
 		virtual int &getTypeId() const { return TYPE_ID; }

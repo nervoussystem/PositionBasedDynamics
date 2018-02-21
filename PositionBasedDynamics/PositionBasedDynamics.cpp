@@ -10,7 +10,7 @@ const Real eps = 1e-6;
 // PositionBasedDynamics
 //////////////////////////////////////////////////////////////////////////
 
-bool PositionBasedDynamics::solve_DistanceConstraint(
+Real PositionBasedDynamics::solve_DistanceConstraint(
 	const Vector3r &p0, Real invMass0, 
 	const Vector3r &p1, Real invMass1,
 	const Real restLength,
@@ -20,21 +20,21 @@ bool PositionBasedDynamics::solve_DistanceConstraint(
 {				
 	Real wSum = invMass0 + invMass1;
 	if (wSum == 0.0)
-		return false;
+		return 0;
 
 	Vector3r n = p1 - p0;
 	Real d = n.norm();
-	n.normalize();
+	n /= d;
 	
 	Vector3r corr;
 	if (d < restLength)
-		corr = compressionStiffness * n * (d - restLength) / wSum;
+		corr = n ;
 	else
-		corr = stretchStiffness * n * (d - restLength) / wSum;
+		corr = n ;
 
-	corr0 =  invMass0 * corr;
-	corr1 = -invMass1 * corr;
-	return true;
+	corr0 =  -corr;
+	corr1 = corr;
+	return d-restLength;
 }
 
 
@@ -43,7 +43,7 @@ Real sgn(Real v) {
 	return (0<v) - (v<0);
 }
 
-bool PositionBasedDynamics::solve_DihedralConstraint(
+Real PositionBasedDynamics::solve_DihedralConstraint(
 	const Vector3r &p0, Real invMass0,		
 	const Vector3r &p1, Real invMass1,
 	const Vector3r &p2, Real invMass2,
@@ -85,31 +85,22 @@ bool PositionBasedDynamics::solve_DihedralConstraint(
 
 	// Real phi = (-0.6981317 * dot * dot - 0.8726646) * dot + 1.570796;	// fast approximation
 
-	Real lambda = 
-		invMass0 * d0.squaredNorm() +
-		invMass1 * d1.squaredNorm() +
-		invMass2 * d2.squaredNorm() +
-		invMass3 * d3.squaredNorm();
-
-	if (lambda == 0.0)
-		return false;	
-
 	// stability
 	// 1.5 is the largest magic number I found to be stable in all cases :-)
 	//if (stiffness > 0.5 && fabs(phi - b.restAngle) > 1.5)		
 	//	stiffness = 0.5;
-	lambda = (phi-restAngle) / lambda * stiffness;
+	Real lambda = 1.0;// (phi - restAngle) / lambda * stiffness;
 	//lambda = (tanA) / lambda * stiffness;
 
 	if (n1.cross(n2).dot(e) > 0.0)
 		lambda = -lambda;	
 
-	corr0 = - invMass0 * lambda * d0;
-	corr1 = - invMass1 * lambda * d1;
-	corr2 = - invMass2 * lambda * d2;
-	corr3 = - invMass3 * lambda * d3;
+	corr0 = lambda * d0;
+	corr1 = lambda * d1;
+	corr2 = lambda * d2;
+	corr3 = lambda * d3;
 
-	return true;
+	return phi-restAngle;
 }
 
 bool PositionBasedDynamics::solve_VolumeConstraint(

@@ -913,18 +913,20 @@ bool DistanceConstraint::solvePositionConstraint(SimulationModel &model)
 	const Real invMass2 = pd.getInvMass(i2);
 
 	Vector3r corr1, corr2;
-	const bool res = PositionBasedDynamics::solve_DistanceConstraint(
+	Real val = PositionBasedDynamics::solve_DistanceConstraint(
 		x1, invMass1, x2, invMass2,
 		m_restLength, model.getClothStiffness(), model.getClothStiffness(), corr1, corr2);
 
-	if (res)
+	Real dMultiplier = (-val - m_compliance*multiplier)/(corr1.squaredNorm()*invMass1+corr2.squaredNorm()*invMass2+m_compliance);
+	multiplier += dMultiplier;
+	if (val)
 	{
 		if (invMass1 != 0.0)
-			x1 += corr1;
+			x1 += invMass1*dMultiplier*corr1;
 		if (invMass2 != 0.0)
-			x2 += corr2;
+			x2 += invMass2*dMultiplier*corr2;
 	}
-	return res;
+	return val;
 }
 
 
@@ -988,24 +990,27 @@ bool DihedralConstraint::solvePositionConstraint(SimulationModel &model)
 	const Real invMass4 = pd.getInvMass(i4);
 
 	Vector3r corr1, corr2, corr3, corr4;
-	const bool res = PositionBasedDynamics::solve_DihedralConstraint(
+	Real val = PositionBasedDynamics::solve_DihedralConstraint(
 		x1, invMass1, x2, invMass2, x3, invMass3, x4, invMass4,
 		m_restAngle,
 		model.getClothBendingStiffness(),
 		corr1, corr2, corr3, corr4);
 
-	if (res)
+
+	Real dMultiplier = (-val - m_compliance*multiplier) / (corr1.squaredNorm()*invMass1+ corr2.squaredNorm()*invMass2+corr3.squaredNorm()*invMass3 + corr4.squaredNorm()*invMass4 + m_compliance);
+	multiplier += dMultiplier;
+	if (val)
 	{
 		if (invMass1 != 0.0)
-			x1 += corr1;
+			x1 += invMass1*dMultiplier*corr1;
 		if (invMass2 != 0.0)
-			x2 += corr2;
+			x2 += invMass2*dMultiplier*corr2;
 		if (invMass3 != 0.0)
-			x3 += corr3;
+			x3 += invMass3*dMultiplier*corr3;
 		if (invMass4 != 0.0)
-			x4 += corr4;
+			x4 += invMass4*dMultiplier*corr4;
 	}
-	return res;
+	return val;
 }
 
 
