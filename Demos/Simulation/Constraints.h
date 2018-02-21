@@ -16,6 +16,7 @@ namespace PBD
 		unsigned int m_numberOfBodies;
 		/** indices of the linked bodies */
 		unsigned int *m_bodies;
+		Real multiplier;
 
 		Constraint(const unsigned int numberOfBodies) 
 		{
