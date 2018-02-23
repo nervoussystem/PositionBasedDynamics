@@ -221,9 +221,10 @@ namespace PBD
 	{
 	public:
 		static int TYPE_ID;
-		Real m_restAngle,m_compliance = .5;
+		Real m_restAngle,m_compliance = .5;//change bend strength, smaller is stiffer
 
 		DihedralConstraint() : Constraint(4) {}
+		DihedralConstraint(Real bendK) : Constraint(4) { m_compliance = bendK; }
 		virtual int &getTypeId() const { return TYPE_ID; }
 
 		virtual bool initConstraint(SimulationModel &model, const unsigned int particle1, const unsigned int particle2,

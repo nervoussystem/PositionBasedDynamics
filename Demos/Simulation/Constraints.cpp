@@ -966,7 +966,7 @@ bool DihedralConstraint::initConstraint(SimulationModel &model, const unsigned i
 	if (dot < -1.0) dot = -1.0;
 	if (dot > 1.0) dot = 1.0;
 
-	m_restAngle = 0;// acos(dot);
+	m_restAngle = acos(dot);
 
 	return true;
 }
