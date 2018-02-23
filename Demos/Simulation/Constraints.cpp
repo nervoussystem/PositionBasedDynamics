@@ -33,6 +33,7 @@ int ParticleRigidBodyContactConstraint::TYPE_ID = IDFactory::getId();
 int StretchShearConstraint::TYPE_ID = IDFactory::getId();
 int BendTwistConstraint::TYPE_ID = IDFactory::getId();
 int FloorConstraint::TYPE_ID = IDFactory::getId();
+int PinConstraint::TYPE_ID = IDFactory::getId();
 
 //////////////////////////////////////////////////////////////////////////
 // BallJoint
@@ -1743,7 +1744,17 @@ bool FloorConstraint::solvePositionConstraint(SimulationModel &model)
 	int num = pd.size();
 	for (int i = 0; i < num; ++i) {
 		Vector3r & pos = pd.getPosition(i);
-		pos.z() = std::max(pos.z(), 0.0+rand()*.0001/RAND_MAX);
+		pos.z() = std::max(pos.z(), m_floor);
 	}
+	return true;
+}
+
+
+bool PinConstraint::solvePositionConstraint(SimulationModel &model)
+{
+	ParticleData & pd = model.getParticles();
+	const unsigned i1 = m_bodies[0];
+
+	pd.getPosition(i1).z() = m_z;
 	return true;
 }

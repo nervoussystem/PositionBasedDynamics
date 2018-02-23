@@ -234,6 +234,7 @@ namespace PBD
 	class FloorConstraint : public Constraint {
 	public:
 		static int TYPE_ID;
+		Real m_floor;
 		FloorConstraint() : Constraint(0) {}
 		virtual int &getTypeId() const { return TYPE_ID; }
 
@@ -429,6 +430,17 @@ namespace PBD
 		virtual int &getTypeId() const { return TYPE_ID; }
 
 		virtual bool initConstraint(SimulationModel &model, const unsigned int quaternion1, const unsigned int quaternion2);
+		virtual bool solvePositionConstraint(SimulationModel &model);
+	};
+
+
+	class PinConstraint : public Constraint {
+	public:
+		static int TYPE_ID;
+		PinConstraint() : Constraint(1) {}
+		Real m_z;
+		virtual int &getTypeId() const { return TYPE_ID; }
+
 		virtual bool solvePositionConstraint(SimulationModel &model);
 	};
 }
